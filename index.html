@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Minimal stlite localStorage</title>
+  <title>Corrected stlite localStorage</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.55.0/build/stlite.css"
@@ -17,40 +17,38 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-STORAGE_KEY = "stlite-minimal-key" # A unique key for this app
+STORAGE_KEY = "stlite-minimal-key"
 
 # 1. Component to LOAD data from localStorage.
-# This runs on every script load and returns the current value.
 load_script = f"""
 <script>
     window.frameElement.style.display = 'none';
     Streamlit.setComponentValue(localStorage.getItem("{STORAGE_KEY}"));
-</script>
+<\/script>
 """
 loaded_value = components.html(load_script, height=0)
 
-# 2. Initialize Python state only on the first run
+# 2. Initialize Python state
 if "value" not in st.session_state:
-    st.session_state.value = loaded_value or "" # Use loaded value or empty string
+    st.session_state.value = loaded_value or ""
 
-st.title("Minimal localStorage Test")
+st.title("Corrected localStorage Test")
 
-# 3. UI to show and change the value
+# 3. UI
 new_value = st.text_input("Value:", default_value=st.session_state.value)
 
 if st.button("Save"):
     # 4. Component to SAVE data to localStorage
-    # This runs only when the button is clicked
     save_script = f"""
     <script>
         const valueToSave = "{new_value.replace('"', r'\"')}";
         localStorage.setItem("{STORAGE_KEY}", valueToSave);
         window.frameElement.style.display = 'none';
-    </script>
+    <\/script>
     """
     components.html(save_script, height=0)
     
-    # 5. Update Python state and rerun to refresh the UI
+    # 5. Update Python state
     st.session_state.value = new_value
     st.rerun()
 
@@ -61,7 +59,7 @@ st.write(f"Current Saved Value: **{st.session_state.value}**")
   <script>
     stlite.mount(
       {
-        requirements: [], // No requirements, so it loads fast
+        requirements: [], // No requirements
         entrypoint: "streamlit_app.py",
         files: {
           "streamlit_app.py": document.querySelector('script[type="text/python"]').textContent,
