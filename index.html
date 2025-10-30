@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>stlite localStorage Demo</title>
+  <!-- Load the stlite CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.55.0/build/stlite.css"
+  >
+</head>
+<body>
+  <!-- A container to mount the stlite app -->
+  <div id="root"></div>
+
+  <!-- A simple loading message -->
+  <div id="loading-message" style="font-family: sans-serif; text-align: center; padding-top: 4rem;">
+    <h2>Loading Streamlit App...</h2>
+    <p>This may take a moment. Please wait.</p>
+  </div>
+
+  <!-- Load the stlite JavaScript runtime -->
+  <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.55.0/build/stlite.js"></script>
+
+  <!-- The Python script for the Streamlit app -->
+  <script type="text/python">
+# This is a Python script embedded in HTML.
+# It will be read by the stlite.mount() function below.
+
+import streamlit as st
+from streamlit_local_storage import LocalStorage
+
+st.set_page_config(layout="centered")
+st.title("stlite & localStorage Demo 💾")
+st.write(
+    "This app runs 100% in your browser and saves data "
+    "to your browser's `localStorage`."
+)
+st.caption("Perfect for GitHub Pages!")
+
+# --- Define a key for our storage ---
+STORAGE_KEY = "stlite-demo-key"
+
+# 1. Initialize the local storage object
+try:
+    localS = LocalStorage()
+except Exception as e:
+    st.error(f"Error initializing localStorage: {e}")
+    st.stop()
+
+
+# 2. Input to set a value
+st.subheader("1. Save Data")
+item_value = st.text_input("Enter a value to save in your browser:", key="input")
+
+if st.button("Save Value"):
+    if item_value:
+        localS.setItem(STORAGE_KEY, item_value)
+        st.success(f"Saved '{item_value}' to localStorage!")
+        # We rerun to update the "Retrieve Data" section instantly
+        st.rerun()
+    else:
+        st.warning("Please enter a value to save.")
+
+# 3. Retrieve and display the value
+st.subheader("2. Retrieve Data")
+retrieved_value = localS.getItem(STORAGE_KEY)
+
+if retrieved_value:
+    st.write(f"Value retrieved from localStorage:")
+    # Display the value in a noticeable way
+    st.success(f"**{retrieved_value}**")
+else:
+    st.info(
+        f"No value found in localStorage for our key (`{STORAGE_KEY}`). "
+        "Try saving a value above."
+    )
+
+# 4. Delete the value
+st.subheader("3. Delete Data")
+if st.button("Delete Saved Value", type="primary"):
+    localS.deleteItem(STORAGE_KEY)
+    st.info("Value deleted from localStorage.")
+    # We rerun to update the "Retrieve Data" section instantly
+    st.rerun()
+
+st.divider()
+st.markdown(
+    "Refresh this page! Your saved value will still be here "
+    "(until you delete it)."
+)
+
+  </script>
+
+  <!-- The main stlite bootloader script -->
+  <script>
+    // Get the Python script content from the <script type="text/python"> tag
+    const pythonScript = document.querySelector('script[type="text/python"]').textContent;
+
+    stlite.mount(
+      {
+        // We must list all PyPI packages here
+        requirements: ["streamlit-local-storage"], 
+        
+        // The entrypoint file for the Streamlit app
+        entrypoint: "streamlit_app.py",
+        
+        // The files for the app
+        files: {
+          "streamlit_app.py": pythonScript,
+        },
+      },
+      // The DOM element to mount the app to
+      document.getElementById("root")
+    ).then(() => {
+      // Hide the loading message once the app is mounted
+      document.getElementById("loading-message").style.display = "none";
+    });
+  </script>
+</body>
+</html>
+
