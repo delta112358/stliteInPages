@@ -3,66 +3,72 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>stlite NumPy Test</title>
+  <title>Minimal stlite localStorage</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.55.0/build/stlite.css"
   >
 </head>
 <body>
-  <!-- A container to mount the stlite app -->
   <div id="root"></div>
-
-  <!-- A loading message -->
-  <div id="loading-message" style="font-family: sans-serif; text-align: center; padding-top: 4rem;">
-    <h2>Loading stlite with NumPy...</h2>
-    <p>This may take a moment, as NumPy is a large package.</p>
-  </div>
-  
   <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.55.0/build/stlite.js"></script>
   
   <script type="text/python">
 import streamlit as st
-import numpy as np # Try to import NumPy
+import streamlit.components.v1 as components
 
-st.title("stlite NumPy Test")
-st.write("Attempting to import NumPy and use it...")
+STORAGE_KEY = "stlite-minimal-key" # A unique key for this app
 
-try:
-    # Create a simple NumPy array
-    a = np.array([1, 2, 3, 4, 5])
-    
-    # Perform a NumPy operation
-    b = a * 2
-    
-    st.success("Successfully imported NumPy!")
-    st.write("Original NumPy array:")
-    st.code(f"a = {a}")
-    
-    st.write("Result of `a * 2`:")
-    st.code(f"b = {b}")
+# 1. Component to LOAD data from localStorage.
+# This runs on every script load and returns the current value.
+load_script = f"""
+<script>
+    window.frameElement.style.display = 'none';
+    Streamlit.setComponentValue(localStorage.getItem("{STORAGE_KEY}"));
+</script>
+"""
+loaded_value = components.html(load_script, height=0)
 
-except Exception as e:
-    st.error(f"Failed to import or use NumPy.")
-    st.exception(e)
+# 2. Initialize Python state only on the first run
+if "value" not in st.session_state:
+    st.session_state.value = loaded_value or "" # Use loaded value or empty string
+
+st.title("Minimal localStorage Test")
+
+# 3. UI to show and change the value
+new_value = st.text_input("Value:", default_value=st.session_state.value)
+
+if st.button("Save"):
+    # 4. Component to SAVE data to localStorage
+    # This runs only when the button is clicked
+    save_script = f"""
+    <script>
+        const valueToSave = "{new_value.replace('"', r'\"')}";
+        localStorage.setItem("{STORAGE_KEY}", valueToSave);
+        window.frameElement.style.display = 'none';
+    </script>
+    """
+    components.html(save_script, height=0)
+    
+    # 5. Update Python state and rerun to refresh the UI
+    st.session_state.value = new_value
+    st.rerun()
+
+st.write(f"Current Saved Value: **{st.session_state.value}**")
 
   </script>
+  
   <script>
     stlite.mount(
       {
-        // Add numpy to the requirements
-        requirements: ["numpy"], 
-        
+        requirements: [], // No requirements, so it loads fast
         entrypoint: "streamlit_app.py",
         files: {
           "streamlit_app.py": document.querySelector('script[type="text/python"]').textContent,
         },
       },
       document.getElementById("root")
-    ).then(() => {
-      // Hide the loading message once the app is mounted
-      document.getElementById("loading-message").style.display = "none";
-    });
+    );
   </script>
 </body>
 </html>
