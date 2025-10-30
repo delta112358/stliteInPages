@@ -3,47 +3,66 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>stlite Test</title>
+  <title>stlite NumPy Test</title>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.55.0/build/stlite.css"
   >
 </head>
 <body>
+  <!-- A container to mount the stlite app -->
   <div id="root"></div>
+
+  <!-- A loading message -->
+  <div id="loading-message" style="font-family: sans-serif; text-align: center; padding-top: 4rem;">
+    <h2>Loading stlite with NumPy...</h2>
+    <p>This may take a moment, as NumPy is a large package.</p>
+  </div>
+  
   <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.55.0/build/stlite.js"></script>
+  
   <script type="text/python">
 import streamlit as st
-from streamlit_local_storage import LocalStorage
+import numpy as np # Try to import NumPy
 
-localS = LocalStorage()
-STORAGE_KEY = "test-key"
+st.title("stlite NumPy Test")
+st.write("Attempting to import NumPy and use it...")
 
-# 1. Set Value
-item_value = st.text_input("Value to save:")
-if st.button("Save"):
-    localS.setItem(STORAGE_KEY, item_value)
-    st.rerun()
+try:
+    # Create a simple NumPy array
+    a = np.array([1, 2, 3, 4, 5])
+    
+    # Perform a NumPy operation
+    b = a * 2
+    
+    st.success("Successfully imported NumPy!")
+    st.write("Original NumPy array:")
+    st.code(f"a = {a}")
+    
+    st.write("Result of `a * 2`:")
+    st.code(f"b = {b}")
 
-# 2. Get Value
-retrieved_value = localS.getItem(STORAGE_KEY)
-if retrieved_value:
-    st.write(f"Value in storage: {retrieved_value}")
-else:
-    st.write("No value in storage.")
+except Exception as e:
+    st.error(f"Failed to import or use NumPy.")
+    st.exception(e)
 
   </script>
   <script>
     stlite.mount(
       {
-        requirements: ["streamlit-local-storage"],
+        // Add numpy to the requirements
+        requirements: ["numpy"], 
+        
         entrypoint: "streamlit_app.py",
         files: {
           "streamlit_app.py": document.querySelector('script[type="text/python"]').textContent,
         },
       },
       document.getElementById("root")
-    );
+    ).then(() => {
+      // Hide the loading message once the app is mounted
+      document.getElementById("loading-message").style.display = "none";
+    });
   </script>
 </body>
 </html>
