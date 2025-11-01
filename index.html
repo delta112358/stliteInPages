@@ -1,72 +1,53 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Corrected stlite localStorage</title>
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.60.0/build/stlite.css"
-  >
-</head>
-<body>
-  <div id="root"></div>
-  <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.60.0/build/stlite.js"></script>
-  
-  <script type="text/python">
-import streamlit as st
-import streamlit.components.v1 as components
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>stlite localStorage Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.50.0/build/stlite.js"></script>
+  </head>
 
-STORAGE_KEY = "stlite-minimal-key"
+  <body>
+    <div id="root"></div>
 
-# 1. Component to LOAD data from localStorage.
-load_script = f"""
-<script>
-    window.frameElement.style.display = 'none';
-    Streamlit.setComponentValue(localStorage.getItem("{STORAGE_KEY}"));
-<\/script>
-"""
-loaded_value = components.html(load_script, height=0)
-
-# 2. Initialize Python state
-st.session_state.value = loaded_value or ""
-
-st.title("Corrected localStorage Test")
-
-# 3. UI
-new_value = st.text_input("Value:")
-
-if st.button("Save"):
-    # 4. Component to SAVE data to localStorage
-    save_script = f"""
     <script>
-        const valueToSave = "{new_value.replace('"', r'\"')}";
-        localStorage.setItem("{STORAGE_KEY}", valueToSave);
-        window.frameElement.style.display = 'none';
-    <\/script>
-    """
-    components.html(save_script, height=0)
-    
-    # 5. Update Python state
+      stlite.mount(
+        {
+          requirements: ["streamlit-javascript"], 
+          entrypoint: "streamlit_app.py", 
+          files: {
+            "streamlit_app.py": `
+import streamlit as st
+from streamlit_javascript import st_javascript
+
+st.title("Stlite localStorage Test")
+
+js_command_set = f"window.parent.localStorage.setItem('my_stlite_key', '{value_to_save}');"
+js_command_get = "window.parent.localStorage.getItem('my_stlite_key')"
+
+st.subheader("Current Saved Value:")
+
+current_value = st_javascript(js_command_get)
+if current_value is None:
+    st.write("No value is currently set in localStorage for 'my_stlite_key'.")
+else:
+    st.write(current_value)
+
+value_to_save = st.text_input("Value")
+if st.button("Save"):
+    st_javascript(js_command_set)
     st.rerun()
-
-st.write(f"Current Saved Value: {st.session_state.value}")
-
-  </script>
-  
-  <script>
-    stlite.mount(
-      {
-        requirements: [], // No requirements
-        entrypoint: "streamlit_app.py",
-        files: {
-          "streamlit_app.py": document.querySelector('script[type="text/python"]').textContent,
+`
+          },
         },
-      },
-      document.getElementById("root")
-    );
-  </script>
-</body>
+        document.getElementById("root")
+      );
+    </script>
+  </body>
 </html>
 
 
