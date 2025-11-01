@@ -6,12 +6,12 @@
   <title>Corrected stlite localStorage</title>
   <link
     rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.55.0/build/stlite.css"
+    href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.60.0/build/stlite.css"
   >
 </head>
 <body>
   <div id="root"></div>
-  <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.55.0/build/stlite.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.60.0/build/stlite.js"></script>
   
   <script type="text/python">
 import streamlit as st
@@ -29,8 +29,7 @@ load_script = f"""
 loaded_value = components.html(load_script, height=0)
 
 # 2. Initialize Python state
-if "value" not in st.session_state:
-    st.session_state.value = loaded_value or ""
+st.session_state.value = loaded_value or ""
 
 st.title("Corrected localStorage Test")
 
@@ -49,10 +48,9 @@ if st.button("Save"):
     components.html(save_script, height=0)
     
     # 5. Update Python state
-    st.session_state.value = new_value
     st.rerun()
 
-st.write(f"Current Saved Value: **{st.session_state.value}**")
+st.write(f"Current Saved Value: {st.session_state.value}")
 
   </script>
   
