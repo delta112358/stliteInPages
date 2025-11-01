@@ -34,7 +34,7 @@ st.session_state.value = loaded_value or ""
 st.title("Corrected localStorage Test")
 
 # 3. UI
-new_value = st.text_input("Value:", default_value=st.session_state.value)
+new_value = st.text_input("Value:")
 
 if st.button("Save"):
     # 4. Component to SAVE data to localStorage
