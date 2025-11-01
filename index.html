@@ -26,7 +26,6 @@ from streamlit_javascript import st_javascript
 
 st.title("Stlite localStorage Test")
 
-js_command_set = f"window.parent.localStorage.setItem('my_stlite_key', '{value_to_save}');"
 js_command_get = "window.parent.localStorage.getItem('my_stlite_key')"
 
 st.subheader("Current Saved Value:")
@@ -39,6 +38,7 @@ else:
 
 value_to_save = st.text_input("Value")
 if st.button("Save"):
+    js_command_set = f"window.parent.localStorage.setItem('my_stlite_key', '{value_to_save}');"
     st_javascript(js_command_set)
     st.rerun()
 `
