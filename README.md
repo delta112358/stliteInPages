@@ -1,2 +1,2 @@
 # stliteInPages
-Test Repo for testing stilte and localstorage access in pages
+Test Repo for testing stlite and localstorage access in pages
